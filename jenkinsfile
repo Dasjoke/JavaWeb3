@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh"""
-                ls
+                ls src
                 """
             }
         }
