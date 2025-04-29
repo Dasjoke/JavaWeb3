@@ -3,10 +3,10 @@
   hosts: webservers
 
   tasks:
-    - name: Get Artifact
-      amazon.aws.s3_object:
-        bucket: "{{ BUCKET_NAME }}"
-        object: "{{ ARTIFACT_NAME }}"
-        dest: "~/{{ ARTIFACT_NAME }}"
-        mode: get
-      delegate_to: localhost
+  - name: Get Artifact
+    amazon.aws.s3_object:
+    bucket: {{ BUCKET_NAME }}
+    object: {{ ARTIFACT_NAME }}
+    dest: ~/{ARTIFACT_NAME }}"
+    mode: get
+    delegate_to: localhost
