@@ -2,22 +2,26 @@ pipeline {
     agent any
 
     stages {
+        stage('Clean Old Artifacts') {
+            steps {
+                sh 'rm -rf target'
+            }
+        }
+
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh """
-                    mvn package
-                """
+                sh 'mvn package'
             }
         }
 
         stage('Upload Artifact') {
             steps {
                 echo 'Uploading to S3...'
-                sh """
+                sh '''
                     cd target
                     aws s3 cp WebAppCal-*.war s3://project1-joke-s3/
-                """
+                '''
             }
         }
 
