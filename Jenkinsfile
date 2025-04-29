@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        BUCKET_NAME = 'project1-joke-s3'
+        ARTIFACT_NAME = ''  // Placeholder, will be set dynamically
+    }
+
     stages {
         stage('Clean Old Artifacts') {
             steps {
@@ -10,28 +15,41 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'Building...'
                 sh 'mvn package'
+            }
+        }
+
+        stage('Set Artifact Name') {
+            steps {
+                script {
+                    // Get the actual filename and store it
+                    def artifactName = sh(
+                        script: "ls target/WebAppCal-*.war | xargs -n 1 basename",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.ARTIFACT_NAME = artifactName
+                }
             }
         }
 
         stage('Upload Artifact') {
             steps {
-                echo 'Uploading to S3...'
-                sh '''
-                    cd target
-                    aws s3 cp WebAppCal-*.war s3://project1-joke-s3/
-                '''
+                echo "Uploading ${env.ARTIFACT_NAME} to S3..."
+                sh """
+                    aws s3 cp target/${env.ARTIFACT_NAME} s3://${env.BUCKET_NAME}/
+                """
             }
         }
 
-        
-
-           stage('Deploy') {
+        stage('Deploy') {
             steps {
-                sh"""
-                cd ansible
-                ansible-playbook -i aws_ec2.yml playbook.yml -e "BUCKET_NAME=${env.BUCKET_NAME} ARTIFACT_NAME=${env.ARTIFACT_NAME}"
+                echo "Deploying ${env.ARTIFACT_NAME} using Ansible..."
+                sh """
+                    cd ansible
+                    ansible-playbook -i aws_ec2.yml playbook.yml \
+                      -e "BUCKET_NAME=${env.BUCKET_NAME} ARTIFACT_NAME=${env.ARTIFACT_NAME}"
                 """
             }
         }
