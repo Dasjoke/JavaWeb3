@@ -31,7 +31,7 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    // Set the artifact name as an environment variable correctly
+                    // Set the artifact name correctly (no additional path)
                     env.ARTIFACT_NAME = "target/${artifactName}"
 
                     // Upload it to S3 using the full path
@@ -51,3 +51,4 @@ pipeline {
         }
     }
 }
+
