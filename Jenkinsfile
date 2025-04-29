@@ -25,10 +25,14 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        
+
+           stage('Deploy') {
             steps {
-                echo 'Deploying....'
-                // Add actual deployment commands here
+                sh"""
+                cd ansible
+                ansible-playbook -i aws_ec2.yml playbook.yml -e "BUCKET_NAME=${env.BUCKET_NAME} ARTIFACT_NAME=${env.ARTIFACT_NAME}"
+                """
             }
         }
     }
