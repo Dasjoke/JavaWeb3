@@ -27,18 +27,15 @@ pipeline {
                 script {
                     // Find the WAR file
                     def artifactName = sh(
-                        script: "cd target && ls WebAppCal-*.war",
+                        script: "ls target/WebAppCal*.war",
                         returnStdout: true
                     ).trim()
                     
                     // Set the artifact name as an environment variable
                     env.ARTIFACT_NAME = artifactName
                     
-                    // Upload it to S3 (replace BUCKET_NAME with your actual bucket name)
-                    sh """
-                        cd target
-                        aws s3 cp ${env.ARTIFACT_NAME} s3://${BUCKET_NAME}/
-                    """
+                    // Upload it to S3
+                    sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.BUCKET_NAME}/"
                 }
             }
         }
@@ -54,3 +51,4 @@ pipeline {
         }
     }
 }
+
