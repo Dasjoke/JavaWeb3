@@ -33,11 +33,11 @@ pipeline {
             steps {
                 script {
                     def artifactName = sh(
-                        script: "ls target/WebAppCal-*.war 2>/dev/null | xargs -n 1 basename || true",
+                        script: "basename $(ls target/WebAppCal-*.war 2>/dev/null || true)",
                         returnStdout: true
                     ).trim()
 
-                    if (!artifactName) {
+                    if (!artifactName || artifactName == 'null') {
                         error("❌ No WAR artifact found in target/. Check Maven build output.")
                     }
 
@@ -68,4 +68,5 @@ pipeline {
         }
     }
 }
+
 
