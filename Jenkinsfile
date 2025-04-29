@@ -22,39 +22,24 @@ pipeline {
             }
         }
 
-        stage('Verify Artifact') {
-            steps {
-                echo '🔍 Listing target directory to check artifact...'
-                sh 'ls -lh target'
-            }
-        }
-
-        stage('Set Artifact Name') {
-            steps {
-                script {
-                    // Use find to locate the WAR file and assign it to the artifactName variable
-                    def artifactName = sh(
-                        script: "find target -type f -name 'WebAppCal-*.war' -print -quit",
-                        returnStdout: true
-                    ).trim()
-
-                    if (!artifactName) {
-                        error("❌ No WAR artifact found in target/. Check Maven build output.")
-                    }
-
-                    // Extract the filename from the path
-                    env.ARTIFACT_NAME = artifactName.split("/").last()
-                    echo "✅ Found artifact: ${env.ARTIFACT_NAME}"
-                }
-            }
-        }
-
         stage('Upload Artifact') {
             steps {
-                echo "☁️ Uploading ${env.ARTIFACT_NAME} to S3 bucket ${env.BUCKET_NAME}..."
-                sh """
-                    aws s3 cp target/${env.ARTIFACT_NAME} s3://${env.BUCKET_NAME}/
-                """
+                script {
+                    // Find the WAR file
+                    def artifactName = sh(
+                        script: "cd target && ls webappcalf*.war",
+                        returnStdout: true
+                    ).trim()
+                    
+                    // Set the artifact name as an environment variable
+                    env.ARTIFACT_NAME = artifactName
+                    
+                    // Upload it to S3 (replace BUCKET_NAME with your actual bucket name)
+                    sh """
+                        cd target
+                        aws s3 cp ${env.ARTIFACT_NAME} s3://${BUCKET_NAME}/
+                    """
+                }
             }
         }
 
@@ -69,5 +54,3 @@ pipeline {
         }
     }
 }
-
-
