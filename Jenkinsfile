@@ -27,7 +27,7 @@ pipeline {
                 script {
                     // Find the WAR file
                     def artifactName = sh(
-                        script: "cd target && ls webappcalf*.war",
+                        script: "cd target && ls webAppcal-*.war",
                         returnStdout: true
                     ).trim()
                     
