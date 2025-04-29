@@ -29,24 +29,25 @@ pipeline {
             }
         }
 
-       stage('Set Artifact Name') {
-    steps {
-        script {
-            def artifactName = sh(
-                script: 'basename $(ls target/WebAppCal-*.war 2>/dev/null || true)',
-                returnStdout: true
-            ).trim()
+        stage('Set Artifact Name') {
+            steps {
+                script {
+                    // Use find to locate the WAR file and assign it to the artifactName variable
+                    def artifactName = sh(
+                        script: "find target -type f -name 'WebAppCal-*.war' -print -quit",
+                        returnStdout: true
+                    ).trim()
 
-            if (!artifactName || artifactName == 'null') {
-                error("❌ No WAR artifact found in target/. Check Maven build output.")
+                    if (!artifactName) {
+                        error("❌ No WAR artifact found in target/. Check Maven build output.")
+                    }
+
+                    // Extract the filename from the path
+                    env.ARTIFACT_NAME = artifactName.split("/").last()
+                    echo "✅ Found artifact: ${env.ARTIFACT_NAME}"
+                }
             }
-
-            env.ARTIFACT_NAME = artifactName
-            echo "✅ Found artifact: ${env.ARTIFACT_NAME}"
         }
-    }
-}
-
 
         stage('Upload Artifact') {
             steps {
@@ -62,8 +63,7 @@ pipeline {
                 echo "🚀 Deploying ${env.ARTIFACT_NAME} using Ansible..."
                 sh """
                     cd ansible
-                    ansible-playbook -i aws_ec2.yml playbook.yml \
-                      -e "BUCKET_NAME=${env.BUCKET_NAME} ARTIFACT_NAME=${env.ARTIFACT_NAME}"
+                    ansible-playbook -i aws_ec2.yml playbook.yml -e "BUCKET_NAME=${env.BUCKET_NAME} ARTIFACT_NAME=${env.ARTIFACT_NAME}"
                 """
             }
         }
