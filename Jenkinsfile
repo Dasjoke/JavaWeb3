@@ -29,23 +29,24 @@ pipeline {
             }
         }
 
-        stage('Set Artifact Name') {
-            steps {
-                script {
-                    def artifactName = sh(
-                        script: "basename $(ls target/WebAppCal-*.war 2>/dev/null || true)",
-                        returnStdout: true
-                    ).trim()
+       stage('Set Artifact Name') {
+    steps {
+        script {
+            def artifactName = sh(
+                script: 'basename $(ls target/WebAppCal-*.war 2>/dev/null || true)',
+                returnStdout: true
+            ).trim()
 
-                    if (!artifactName || artifactName == 'null') {
-                        error("❌ No WAR artifact found in target/. Check Maven build output.")
-                    }
-
-                    env.ARTIFACT_NAME = artifactName
-                    echo "✅ Found artifact: ${env.ARTIFACT_NAME}"
-                }
+            if (!artifactName || artifactName == 'null') {
+                error("❌ No WAR artifact found in target/. Check Maven build output.")
             }
+
+            env.ARTIFACT_NAME = artifactName
+            echo "✅ Found artifact: ${env.ARTIFACT_NAME}"
         }
+    }
+}
+
 
         stage('Upload Artifact') {
             steps {
