@@ -25,16 +25,16 @@ pipeline {
         stage('Upload Artifact') {
             steps {
                 script {
-                    // Find the WAR file
+                    // Find the WAR file and assign it to a Groovy variable
                     def artifactName = sh(
                         script: "ls target/WebAppCal*.war",
                         returnStdout: true
                     ).trim()
-                    
-                    // Set the artifact name as an environment variable
-                    env.ARTIFACT_NAME = artifactName
-                    
-                    // Upload it to S3
+
+                    // Set the artifact name as an environment variable correctly
+                    env.ARTIFACT_NAME = "target/${artifactName}"
+
+                    // Upload it to S3 using the full path
                     sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.BUCKET_NAME}/"
                 }
             }
@@ -51,4 +51,3 @@ pipeline {
         }
     }
 }
-
