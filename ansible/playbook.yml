@@ -1,25 +1,29 @@
 ---
-- name: Deploy WAR from S3
+- name: Update web servers
   hosts: webservers
   become: yes
 
   vars:
-    local_war_path: "/tmp/{{ ARTIFACT_NAME }}"
-    remote_tomcat_path: "/home/ec2-user/apache-tomcat/webapps/{{ ARTIFACT_NAME }}"
+    bucket_name: "project1-joke-s3"
+    artifact_name: "WebAppCal-0.0.7.war"
+    local_artifact_path: "/home/{{ lookup('env', 'USER') }}/{{ artifact_name }}"
+    remote_deploy_path: "/home/ec2-user/apache-tomcat/webapps/{{ artifact_name }}"
 
   tasks:
-    - name: Download WAR file from S3 to localhost
+    - name: Get Artifact from S3 to control node
       amazon.aws.s3_object:
-        bucket: "{{ BUCKET_NAME }}"
-        object: "{{ ARTIFACT_NAME }}"
-        dest: "{{ local_war_path }}"
+        bucket: "{{ bucket_name }}"
+        object: "{{ artifact_name }}"
+        dest: "{{ local_artifact_path }}"
         mode: get
       delegate_to: localhost
       run_once: true
 
-    - name: Copy WAR file from localhost to remote Tomcat webapps directory
+    - name: Deploy artifact to remote Tomcat server
       ansible.builtin.copy:
-        src: "{{ local_war_path }}"
-        dest: "{{ remote_tomcat_path }}"
+        src: "{{ local_artifact_path }}"
+        dest: "{{ remote_deploy_path }}"
+        mode: '0644'
+
 
 
