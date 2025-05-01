@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    local_war_path: "{{ ansible_env.HOME }}/{{ ARTIFACT_NAME }}"
+    local_war_path: "/tmp/{{ ARTIFACT_NAME }}"
     remote_tomcat_path: "/home/ec2-user/apache-tomcat/webapps/{{ ARTIFACT_NAME }}"
 
   tasks:
@@ -15,9 +15,11 @@
         dest: "{{ local_war_path }}"
         mode: get
       delegate_to: localhost
+      run_once: true
 
     - name: Copy WAR file from localhost to remote Tomcat webapps directory
       ansible.builtin.copy:
         src: "{{ local_war_path }}"
         dest: "{{ remote_tomcat_path }}"
+
 
