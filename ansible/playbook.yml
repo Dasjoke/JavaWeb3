@@ -19,11 +19,10 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Deploy artifact to remote Tomcat server
-      ansible.builtin.copy:
-        src: "{{ local_artifact_path }}"
-        dest: "{{ remote_deploy_path }}"
-        mode: '0644'
-
+    - name: Deploy WAR to Tomcat
+  copy:
+    src: "WebAppCal-0.0.7.war"
+    dest: "/home/ec2-user/apache-tomcat/webapps/WebAppCal-0.0.7.war"
+    mode: '0644'
 
 
