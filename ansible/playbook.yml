@@ -3,18 +3,21 @@
   hosts: webservers
   become: yes
 
+  vars:
+    local_war_path: "{{ ansible_env.HOME }}/{{ ARTIFACT_NAME }}"
+    remote_tomcat_path: "/home/ec2-user/apache-tomcat/webapps/{{ ARTIFACT_NAME }}"
+
   tasks:
-    - name: Download WAR file from S3
+    - name: Download WAR file from S3 to localhost
       amazon.aws.s3_object:
         bucket: "{{ BUCKET_NAME }}"
         object: "{{ ARTIFACT_NAME }}"
-        dest: "/tmp/{{ ARTIFACT_NAME }}"
+        dest: "{{ local_war_path }}"
         mode: get
       delegate_to: localhost
 
-    - name: Copy WAR file to Tomcat webapps directory
+    - name: Copy WAR file from localhost to remote Tomcat webapps directory
       ansible.builtin.copy:
-        src: "/tmp/{{ ARTIFACT_NAME }}"
-        dest: "/opt/tomcat/webapps/{{ ARTIFACT_NAME }}"
-        remote_src: yes
+        src: "{{ local_war_path }}"
+        dest: "{{ remote_tomcat_path }}"
 
