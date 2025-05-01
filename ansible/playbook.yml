@@ -1,28 +1,19 @@
 ---
 - name: Update web servers
   hosts: webservers
-  become: yes
-
-  vars:
-    bucket_name: "project1-joke-s3"
-    artifact_name: "WebAppCal-0.0.7.war"
-    local_artifact_path: "/home/{{ lookup('env', 'USER') }}/{{ artifact_name }}"
-    remote_deploy_path: "/home/ec2-user/apache-tomcat/webapps/{{ artifact_name }}"
 
   tasks:
-    - name: Get Artifact from S3 to control node
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}"
-        object: "{{ artifact_name }}"
-        dest: "{{ local_artifact_path }}"
-        mode: get
-      delegate_to: localhost
-      run_once: true
+  - name: Get Artifact
+    amazon.aws.s3_object:
+      bucket: "{{BUCKET_NAME}}"
+      object: "{{ARTIFACT_NAME}}"
+      dest: ~/{{ARTIFACT_NAME}}
+      mode: get
+    delegate_to: localhost
 
-    - name: Deploy WAR to Tomcat
-  copy:
-    src: "WebAppCal-0.0.7.war"
-    dest: "/home/ec2-user/apache-tomcat/webapps/WebAppCal-0.0.7.war"
-    mode: '0644'
+    -name: Deploy Artifact to Hosts
+    ansible.builtin.copy:
+      src: /{{ ARTIFACT_NAME }}
+      dest: /home/ec2-user/apache-tomcat/webapps/{{ ARTIFACT_NAME}}
 
 
